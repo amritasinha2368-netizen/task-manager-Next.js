@@ -35,10 +35,17 @@ const Login = () => {
       router.push("/profile/user");
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message, {
+      toast.error(error.response?.data?.message || "Login failed !!", {
         position: "top-center",
       });
     }
+  };
+
+  const resetForm = () => {
+    setLoginData({
+      email: "",
+      password: "",
+    });
   };
 
   return (
@@ -103,6 +110,7 @@ const Login = () => {
             </button>
             <button
               type="button"
+              onClick={resetForm}
               className="px-3 py-2 bg-orange-600 ms-3 rounded hover:bg-orange-400"
             >
               Reset

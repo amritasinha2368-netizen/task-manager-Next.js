@@ -19,14 +19,23 @@ const Signup = () => {
 
     console.log(event);
     console.log(data);
-    if (data.name.trim() === "" || data.name == null) {
-      toast.warning("Name is required !!", {
+    if (
+      data.name.trim() === "" ||
+      data.email.trim() === "" ||
+      data.password.trim() === ""
+    ) {
+      toast.warning("Name, email and password are required !!", {
         position: "top-center",
       });
       return;
     }
 
-    /// TODO: rest of the field
+    if (data.password.length < 6) {
+      toast.warning("Password must be at least 6 characters !!", {
+        position: "top-center",
+      });
+      return;
+    }
 
     /////
     // form submit
@@ -48,8 +57,7 @@ const Signup = () => {
       });
     } catch (error) {
       console.log(error);
-      console.log(error.response.data.message);
-      toast.error("Signup Error !! " + error.response.data.message, {
+      toast.error("Signup Error !! " + (error.response?.data?.message || "Try again"), {
         position: "top-center",
       });
     }

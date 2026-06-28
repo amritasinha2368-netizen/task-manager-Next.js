@@ -24,33 +24,70 @@ export async function GET(request) {
 // data post
 //create user
 export async function POST(request) {
-  // fetch user detail from  request
-
   const { name, email, password, about, profileURL } = await request.json();
 
-  console.log({ name, email, password, about, profileURL });
+  if (!name?.trim() || !email?.trim() || !password?.trim()) {
+    return NextResponse.json(
+      {
+        message: "Name, email and password are required !!",
+        success: false,
+      },
+      {
+        status: 400,
+      }
+    );
+  }
 
-  // create user object with user model
+  if (password.length < 6) {
+    return NextResponse.json(
+      {
+        message: "Password must be at least 6 characters !!",
+        success: false,
+      },
+      {
+        status: 400,
+      }
+    );
+  }
 
   const user = new User({
-    name,
-    email,
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
     password,
     about,
     profileURL,
   });
 
   try {
-    // save the object to  database
+    await connectDb();
+
+    const existingUser = await User.findOne({
+      email: user.email,
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        {
+          message: "Email is already registered !!",
+          success: false,
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
     user.password = bcrypt.hashSync(
       user.password,
-      parseInt(process.env.BCRYPT_SALT)
+      parseInt(process.env.BCRYPT_SALT || "10")
     );
 
-    console.log(user);
-    await connectDb();
     const createdUser = await user.save();
-    const response = NextResponse.json(user, {
+
+    const safeUser = createdUser.toObject();
+    delete safeUser.password;
+
+    const response = NextResponse.json(safeUser, {
       status: 201,
     });
     return response;
@@ -59,33 +96,13 @@ export async function POST(request) {
     return NextResponse.json(
       {
         message: "failed to create user !!",
-        status: false,
+        success: false,
       },
       {
         status: 500,
       }
     );
   }
-
-  // const body = request.body;
-  // console.log(body);
-  // console.log(request.method);
-  // console.log(request.cookies);
-  // console.log(request.headers);
-  // console.log(request.nextUrl.pathname);
-  // console.log(request.nextUrl.searchParams);
-
-  // const jsonData = await request.json();
-
-  // const textData = await request.text();
-
-  // console.log(jsonData);
-
-  // console.log(textData);
-
-  // return NextResponse.json({
-  //   message: "posting user data",
-  // });
 }
 
 // delete request  function

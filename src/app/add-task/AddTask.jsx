@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import loginSvg from "../../assets/login.svg";
 import Image from "next/image";
 import { addTask } from "@/services/taskService";
-import { taost, toast } from "react-toastify";
+import { toast } from "react-toastify";
 
 const AddTask = () => {
   // console.log("this is add task component");
@@ -11,15 +11,19 @@ const AddTask = () => {
   const [task, setTask] = useState({
     title: "",
     content: "",
-    status: "none",
-    // temp solution
-    userId: "64a506ab413f1d5bcafcdbec",
+    status: "pending",
   });
 
   const handleAddTask = async (event) => {
     event.preventDefault();
-    console.log(task);
-    // validate task data
+
+    if (task.title.trim() === "" || task.content.trim() === "") {
+      toast.warning("Title and content are required !!", {
+        position: "top-center",
+      });
+      return;
+    }
+
     try {
       const result = await addTask(task);
       console.log(result);
@@ -30,14 +34,22 @@ const AddTask = () => {
       setTask({
         title: "",
         content: "",
-        status: "none",
+        status: "pending",
       });
     } catch (error) {
       console.log(error);
-      toast.error("Task not added !!", {
+      toast.error(error.response?.data?.message || "Task not added !!", {
         position: "top-center",
       });
     }
+  };
+
+  const clearForm = () => {
+    setTask({
+      title: "",
+      content: "",
+      status: "pending",
+    });
   };
 
   return (
@@ -120,9 +132,6 @@ const AddTask = () => {
               }}
               value={task.status}
             >
-              <option value="none" disabled>
-                ---Select Status---
-              </option>
               <option value="pending">Pending</option>
               <option value="completed">Completed</option>
             </select>
@@ -133,7 +142,11 @@ const AddTask = () => {
             <button className="bg-blue-600 py-2 px-3 rounded-lg hover:bg-blue-800">
               Add Task{" "}
             </button>
-            <button className="bg-red-600 py-2 px-3 rounded-lg hover:bg-red-800 ms-3">
+            <button
+              type="button"
+              onClick={clearForm}
+              className="bg-red-600 py-2 px-3 rounded-lg hover:bg-red-800 ms-3"
+            >
               Clear
             </button>
           </div>

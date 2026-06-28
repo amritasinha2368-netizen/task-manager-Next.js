@@ -1,17 +1,26 @@
-import mongoose, { Schema, mongo } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const UserSachema = new Schema({
-  name: String,
+const UserSchema = new Schema({
+  name: {
+    type: String,
+    required: [true, "Name Required !!"],
+    trim: true,
+  },
   email: {
     type: String,
     unique: true,
     required: [true, "Email Required !!"],
+    lowercase: true,
+    trim: true,
   },
   password: {
     type: String,
-    require: [true, "Password Required !!"],
+    required: [true, "Password Required !!"],
   },
-  about: String,
+  about: {
+    type: String,
+    default: "",
+  },
   profileURL: String,
   //   address: {
   //     street: String,
@@ -22,4 +31,4 @@ const UserSachema = new Schema({
 });
 
 export const User =
-  mongoose.models.users || mongoose.model("users", UserSachema);
+  mongoose.models.users || mongoose.model("users", UserSchema);

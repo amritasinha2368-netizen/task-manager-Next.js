@@ -14,25 +14,29 @@ export async function GET(request) {
     return NextResponse.json(tasks);
   } catch (error) {
     console.log(error);
-    return "Error in gettting data !!", 404, false;
+    return getResponseMessage("Error in getting data !!", 500, false);
   }
 }
 
 // create all the tasks
 export async function POST(request) {
-  const { title, content, userId, status } = await request.json();
-
-  // fetching logged in user id
-  const authToken = request.cookies.get("authToken")?.value;
-  // console.log(authToken);
-  const data = jwt.verify(authToken, process.env.JWT_KEY);
-  // console.log(data);
-  console.log(data._id);
-
   try {
+    const { title, content, status } = await request.json();
+
+    if (!title?.trim() || !content?.trim()) {
+      return getResponseMessage("Title and content are required !!", 400, false);
+    }
+
+    if (!["pending", "completed"].includes(status)) {
+      return getResponseMessage("Please select valid task status !!", 400, false);
+    }
+
+    const authToken = request.cookies.get("authToken")?.value;
+    const data = jwt.verify(authToken, process.env.JWT_KEY);
+
     const task = new Task({
-      title,
-      content,
+      title: title.trim(),
+      content: content.trim(),
       userId: data._id,
       status,
     });
@@ -44,7 +48,6 @@ export async function POST(request) {
     });
   } catch (error) {
     console.log(error);
-    console.log("my message");
     return getResponseMessage("Failed to create Task !! ", 500, false);
   }
 }

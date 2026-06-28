@@ -5,51 +5,61 @@ import jwt from "jsonwebtoken";
 import { connectDb } from "@/helper/db";
 
 export async function POST(request) {
-  console.log("login api");
   const { email, password } = await request.json();
 
   try {
-    // 1.get user
+    if (!email?.trim() || !password?.trim()) {
+      return NextResponse.json(
+        {
+          message: "Email and password are required !!",
+          success: false,
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     await connectDb();
     const user = await User.findOne({
-      email: email,
+      email: email.trim().toLowerCase(),
     });
 
     if (user == null) {
       throw new Error("user not found !!");
     }
 
-    // 2.password check
     const matched = bcrypt.compareSync(password, user.password);
     if (!matched) {
       throw new Error("Password not matched !!");
     }
-
-    // 3. generate token
 
     const token = jwt.sign(
       {
         _id: user._id,
         name: user.name,
       },
-      process.env.JWT_KEY
+      process.env.JWT_KEY,
+      {
+        expiresIn: "1d",
+      }
     );
 
-    // 4.create nextresponse-- cookie
+    const safeUser = user.toObject();
+    delete safeUser.password;
 
     const response = NextResponse.json({
       message: "Login success !!",
       success: true,
-      user: user,
+      user: safeUser,
     });
 
     response.cookies.set("authToken", token, {
-      expiresIn: "1d",
       httpOnly: true,
+      maxAge: 60 * 60 * 24,
+      path: "/",
+      sameSite: "lax",
     });
-
-    console.log(user);
-    console.log(token);
 
     return response;
   } catch (error) {
@@ -59,7 +69,7 @@ export async function POST(request) {
         success: false,
       },
       {
-        status: 500,
+        status: 401,
       }
     );
   }
