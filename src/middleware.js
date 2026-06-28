@@ -8,13 +8,7 @@ export function middleware(request) {
     return NextResponse.next();
   }
 
-  const loggedInUserNotAccessPaths = pathname === "/login" || pathname === "/signup";
-
-  if (loggedInUserNotAccessPaths) {
-    if (authToken) {
-      return NextResponse.redirect(new URL("/profile/user", request.url));
-    }
-
+  if (pathname === "/login" || pathname === "/signup") {
     return NextResponse.next();
   }
 

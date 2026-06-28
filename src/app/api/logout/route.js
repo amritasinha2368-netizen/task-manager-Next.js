@@ -7,7 +7,10 @@ export async function POST(request) {
   });
 
   response.cookies.set("authToken", "", {
-    expires: new Date(0),
+    httpOnly: true,
+    maxAge: 0,
+    path: "/",
+    sameSite: "lax",
   });
 
   return response;
