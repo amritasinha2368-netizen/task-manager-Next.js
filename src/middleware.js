@@ -4,7 +4,12 @@ export function middleware(request) {
   const { pathname } = request.nextUrl;
   const authToken = request.cookies.get("authToken")?.value;
 
-  if (pathname === "/" || pathname === "/api/login" || pathname === "/api/users") {
+  if (
+    pathname === "/" ||
+    pathname === "/api/login" ||
+    pathname === "/api/logout" ||
+    pathname === "/api/users"
+  ) {
     return NextResponse.next();
   }
 
